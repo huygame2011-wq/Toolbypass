@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEM BYPASS v2.0</title>
+    <style>
+        /* === RESET & FONTS === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Fira+Code:wght@300;400;700&display=swap');
+
+        body {
+            background-color: #000;
+            font-family: 'Fira Code', 'Share Tech Mono', monospace;
+            color: #00ff41;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* === MATRIX RAIN BACKGROUND === */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        /* === MAIN CONTAINER === */
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* === HOODED FIGURE (CSS ART) === */
+        .hooded-figure {
+            position: relative;
+            width: 220px;
+            height: 260px;
+            margin-bottom: -30px;
+            filter: drop-shadow(0 0 15px rgba(0, 255, 65, 0.4));
+        }
+
+        .hood {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 140px;
+            background: #111;
+            border-radius: 80px 80px 0 0;
+            border: 2px solid #1a1a1a;
+            box-shadow: inset 0 -20px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .face-mask {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .eyes-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .eye-x {
+            color: #00ff41;
+            font-size: 28px;
+            font-weight: 700;
+            font-family: 'Share Tech Mono', monospace;
+            text-shadow: 0 0 8px #00ff41, 0 0 16px #00ff41;
+            animation: flicker 3s infinite alternate;
+        }
+
+        .mouth-stitch {
+            display: flex;
+            gap: 4px;
+            color: #00ff41;
+            font-size: 16px;
+            font-weight: 700;
+            text-shadow: 0 0 6px #00ff41;
+            letter-spacing: 2px;
+            border-top: 2px solid #00ff41;
+            border-bottom: 2px solid #00ff41;
+            padding: 2px 8px;
+            border-radius: 2px;
+        }
+
+        .shoulders {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 100px;
+            background: #0a0a0a;
+            border-radius: 100px 100px 0 0;
+            border: 2px solid #1a1a1a;
+            box-shadow: inset 0 20px 40px rgba(0, 0, 0, 0.9);
+        }
+
+        /* === HACKER TEXT === */
+        .hacker-text {
+            position: absolute;
+            top: 30px;
+            left: 10px;
+            color: #ff0000;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 40px #ff0000;
+            transform: rotate(-15deg);
+            z-index: 20;
+            font-family: 'Share Tech Mono', monospace;
+            animation: glitch-text 0.5s infinite alternate;
+        }
+
+        .trust-text {
+            position: absolute;
+            bottom: 80px;
+            right: 20px;
+            color: #ff0000;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
+            transform: rotate(10deg);
+            z-index: 20;
+            font-family: 'Share Tech Mono', monospace;
+            opacity: 0.8;
+        }
+
+        /* === TERMINAL PANEL === */
+        .terminal-panel {
+            width: 100%;
+            background: rgba(5, 5, 5, 0.95);
+            border: 1px solid #00ff41;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2), inset 0 0 60px rgba(0, 255, 65, 0.03);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .terminal-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff41, transparent);
+            animation: scan-line 3s linear infinite;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #1a3a1a;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .dot.red { background: #ff5f56; }
+        .dot.yellow { background: #ffbd2e; }
+        .dot.green { background: #27c93f; }
+
+        .panel-title {
+            font-size: 13px;
+            color: #00ff41;
+            opacity: 0.7;
+            letter-spacing: 2px;
+            margin-left: auto;
+        }
+
+        /* === SHORTENER LINKS === */
+        .shortener-section {
+            margin-bottom: 18px;
+        }
+
+        .section-label {
+            font-size: 12px;
+            color: #00ff41;
+            opacity: 0.8;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .shortener-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 8px;
+        }
+
+        .shortener-item {
+            background: #0a0a0a;
+            border: 1px solid #1a3a1a;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #00ff41;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            letter-spacing: 0.5px;
+            user-select: none;
+        }
+
+        .shortener-item:hover {
+            background: #0f1f0f;
+            border-color: #00ff41;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .shortener-item.selected {
+            background: #00ff41;
+            color: #000;
+            font-weight: 700;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.6);
+        }
+
+        /* === URL INPUT === */
+        .url-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .url-input {
+            flex: 1;
+            background: #0a0a0a;
+            border: 1px solid #1a3a1a;
+            border-radius: 4px;
+            padding: 12px 14px;
+            color: #00ff41;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .url-input:focus {
+            border-color: #00ff41;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        }
+
+        .url-input::placeholder {
+            color: #1a5a1a;
+            font-size: 12px;
+        }
+
+        /* === BUTTONS === */
+        .btn {
+            padding: 12px 28px;
+            border: 1px solid #00ff41;
+            border-radius: 4px;
+            background: transparent;
+            color: #00ff41;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #00ff41;
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-danger {
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #ff0000;
+            color: #000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+        }
+
+        /* === CONFIRM BUTTON === */
+        .confirm-btn-container {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        /* === COUNTDOWN === */
+        .countdown-display {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 14px;
+            color: #ffaa00;
+            text-shadow: 0 0 10px #ffaa00;
+            letter-spacing: 2px;
+            min-height: 20px;
+        }
+
+        .countdown-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ff0000;
+            text-shadow: 0 0 15px #ff0000;
+            display: inline-block;
+            min-width: 40px;
+        }
+
+        /* === RESULT AREA === */
+        .result-area {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.7;
+            min-height: 50px;
+            display: none;
+            word-break: break-all;
+            animation: fade-in 0.5s ease;
+        }
+
+        .result-area.error {
+            display: block;
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            text-shadow: 0 0 8px rgba(255, 0, 0, 0.5);
+        }
+
+        .result-area.success {
+            display: block;
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid #00ff41;
+            color: #00ff41;
+        }
+
+        .result-area.success a {
+            color: #00ffff;
+            text-decoration: underline;
+            word-break: break-all;
+        }
+
+        .result-area.limit {
+            display: block;
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid #ffaa00;
+            color: #ffaa00;
+            text-shadow: 0 0 8px rgba(255, 170, 0, 0.5);
+        }
+
+        /* === FOOTER === */
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #0a5a0a;
+            letter-spacing: 1px;
+        }
+
+        .footer span {
+            color: #00ff41;
+            opacity: 0.5;
+        }
+
+        /* === ANIMATIONS === */
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes glitch-text {
+            0% { transform: rotate(-15deg) translate(0, 0); }
+            100% { transform: rotate(-15deg) translate(1px, -1px); }
+        }
+
+        @keyframes scan-line {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 5px #ff0000; }
+            50% { box-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000; }
+        }
+
+        .pulse-red {
+            animation: pulse-red 0.8s infinite;
+        }
+
+        /* === SCROLLBAR === */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00ff41;
+            border-radius: 3px;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 600px) {
+            .hacker-text {
+                font-size: 16px;
+                top: 15px;
+                left: 5px;
+            }
+            .trust-text {
+                font-size: 14px;
+                bottom: 60px;
+                right: 5px;
+            }
+            .hooded-figure {
+                width: 160px;
+                height: 200px;
+            }
+            .hood {
+                width: 120px;
+                height: 100px;
+            }
+            .shoulders {
+                width: 150px;
+                height: 80px;
+            }
+            .face-mask {
+                top: 50px;
+                width: 80px;
+            }
+            .eye-x {
+                font-size: 20px;
+            }
+            .shortener-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .url-input-group {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Matrix Rain Canvas -->
+    <canvas id="matrix-canvas"></canvas>
+
+    <!-- Hacker Text Decorations -->
+    <div class="hacker-text">HACK<br>THE<br>SYSTEM</div>
+    <div class="trust-text">TRUST<br>NO ONE</div>
+
+    <!-- Main Container -->
+    <div class="container">
+
+        <!-- Hooded Figure with X Eyes -->
+        <div class="hooded-figure">
+            <div class="hood"></div>
+            <div class="face-mask">
+                <div class="eyes-row">
+                    <span class="eye-x">✕</span>
+                    <span class="eye-x">✕</span>
+                </div>
+                <div class="mouth-stitch">▬▬▬▬▬</div>
+            </div>
+            <div class="shoulders"></div>
+        </div>
+
+        <!-- Terminal Panel -->
+        <div class="terminal-panel">
+            <div class="panel-header">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="panel-title">BYPASS_TERMINAL v2.0</span>
+            </div>
+
+            <!-- Shortener Links List -->
+            <div class="shortener-section">
+                <div class="section-label">> CHỌN LINK RÚT GỌN ĐỂ XÁC NHẬN</div>
+                <div class="shortener-grid" id="shortenerGrid">
+                    <div class="shortener-item" data-domain="link4m.net">Link4m</div>
+                    <div class="shortener-item" data-domain="layma.net">Layma.net</div>
+                    <div class="shortener-item" data-domain="traffic4k.com">Traffic4k.com</div>
+                    <div class="shortener-item" data-domain="site2s.com">Site2s.com</div>
+                    <div class="shortener-item" data-domain="bbmkt.com">Bbmkt.com</div>
+                    <div class="shortener-item" data-domain="system.traffichub.vn">system.traffichub.vn</div>
+                    <div class="shortener-item" data-domain="app.trafficviet.vn">app.trafficviet.vn</div>
+                    <div class="shortener-item" data-domain="phienchoso.com">Phienchoso.com</div>
+                </div>
+            </div>
+
+            <!-- URL Input -->
+            <div class="url-input-group">
+                <input type="text" class="url-input" id="urlInput" placeholder="Dán URL của web cần vượt link (bắt đầu bằng https://)...">
+            </div>
+
+            <!-- Confirm Selection Button -->
+            <div class="confirm-btn-container">
+                <button class="btn" id="confirmBtn" style="font-size:11px; padding:8px 18px;">ẤN CHỌN CÁC LINK TRÊN ĐỂ XÁC NHẬN</button>
+            </div>
+
+            <!-- Countdown Display -->
+            <div class="countdown-display" id="countdownDisplay"></div>
+
+            <!-- Bypass Button -->
+            <div class="confirm-btn-container">
+                <button class="btn btn-danger" id="bypassBtn" disabled>▶ VƯỢT LINK</button>
+            </div>
+
+            <!-- Result Area -->
+            <div class="result-area" id="resultArea"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <span>©</span> SYSTEM BYPASS v2.0 — ALL ACTIVITIES ARE SIMULATED FOR EDUCATIONAL PURPOSES <span>©</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ==========================================
+            // MATRIX RAIN EFFECT
+            // ==========================================
+            const canvas = document.getElementById('matrix-canvas');
+            const ctx = canvas.getContext('2d');
+
+            let width, height;
+            let columns;
+            let drops = [];
+            const fontSize = 14;
+            const characters = '01ABCDEFGHIJKLMNOPQRSTUVWXYZアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+
+            function resizeCanvas() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+                columns = Math.floor(width / fontSize);
+                drops = [];
+                for (let i = 0; i < columns; i++) {
+                    drops[i] = Math.random() * -100;
+                }
+            }
+
+            function drawMatrix() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, width, height);
+
+                ctx.fillStyle = '#00ff41';
+                ctx.font = fontSize + 'px monospace';
+
+                for (let i = 0; i < drops.length; i++) {
+                    const char = characters[Math.floor(Math.random() * characters.length)];
+                    const x = i * fontSize;
+                    const y = drops[i] * fontSize;
+
+                    // Random brighter characters
+                    if (Math.random() > 0.98) {
+                        ctx.fillStyle = '#ffffff';
+                    } else if (Math.random() > 0.95) {
+                        ctx.fillStyle = '#00ffff';
+                    } else {
+                        ctx.fillStyle = '#00ff41';
+                    }
+
+                    ctx.fillText(char, x, y);
+
+                    if (y > height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            setInterval(drawMatrix, 50);
+
+            // ==========================================
+            // STATE
+            // ==========================================
+            let selectedShortener = null;
+            let isProcessing = false;
+            let countdownInterval = null;
+
+            // ==========================================
+            // DOM ELEMENTS
+            // ==========================================
+            const shortenerGrid = document.getElementById('shortenerGrid');
+            const urlInput = document.getElementById('urlInput');
+            const confirmBtn = document.getElementById('confirmBtn');
+            const bypassBtn = document.getElementById('bypassBtn');
+            const countdownDisplay = document.getElementById('countdownDisplay');
+            const resultArea = document.getElementById('resultArea');
+
+            // ==========================================
+            // SHORTENER SELECTION
+            // ==========================================
+            shortenerGrid.addEventListener('click', function(e) {
+                const item = e.target.closest('.shortener-item');
+                if (!item) return;
+                if (isProcessing) return;
+
+                // Remove previous selection
+                document.querySelectorAll('.shortener-item').forEach(el => {
+                    el.classList.remove('selected');
+                });
+
+                // Select new
+                item.classList.add('selected');
+                selectedShortener = item.dataset.domain;
+
+                // Reset result
+                clearResult();
+                bypassBtn.disabled = true;
+                countdownDisplay.textContent = '';
+            });
+
+            // ==========================================
+            // CONFIRM BUTTON
+            // ==========================================
+            confirmBtn.addEventListener('click', function() {
+                if (!selectedShortener) {
+                    showResult('error', '> LỖI: Vui lòng chọn một link rút gọn ở trên để xác nhận!');
+                    return;
+                }
+                if (!urlInput.value.trim()) {
+                    showResult('error', '> LỖI: Vui lòng nhập URL cần vượt link!');
+                    return;
+                }
+                if (!urlInput.value.trim().startsWith('https://')) {
+                    showResult('error', '> LỖI: URL phải bắt đầu bằng https://');
+                    return;
+                }
+                showResult('success', '> ĐÃ XÁC NHẬN LINK RÚT GỌN: ' + selectedShortener + '<br>> BÂY GIỜ ẤN NÚT "VƯỢT LINK" ĐỂ TIẾP TỤC.');
+                bypassBtn.disabled = false;
+            });
+
+            // ==========================================
+            // BYPASS BUTTON
+            // ==========================================
+            bypassBtn.addEventListener('click', function() {
+                if (isProcessing) return;
+
+                const url = urlInput.value.trim();
+                const domain = selectedShortener;
+
+                // Validate URL
+                if (!url.startsWith('https://')) {
+                    showResult('error', '> LỖI 404: DO NOT ACCEPT THIS ACTION<br>> URL không hợp lệ. Chỉ chấp nhận dạng https://');
+                    return;
+                }
+
+                if (!domain) {
+                    showResult('error', '> LỖI: Chưa chọn link rút gọn!');
+                    return;
+                }
+
+                // Start processing
+                isProcessing = true;
+                bypassBtn.disabled = true;
+                bypassBtn.classList.add('pulse-red');
+                clearResult();
+                countdownDisplay.textContent = '';
+
+                let secondsLeft = 15;
+
+                countdownDisplay.innerHTML = '> ĐANG XỬ LÝ... <span class="countdown-number">' + secondsLeft + '</span> GIÂY';
+
+                countdownInterval = setInterval(function() {
+                    secondsLeft--;
+                    if (secondsLeft > 0) {
+                        countdownDisplay.innerHTML = '> ĐANG XỬ LÝ... <span class="countdown-number">' + secondsLeft + '</span> GIÂY';
+                    } else {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                        countdownDisplay.textContent = '';
+
+                        // Determine result based on domain and URL pattern
+                        processResult(domain, url);
+                    }
+                }, 1000);
+            });
+
+            // ==========================================
+            // PROCESS RESULT LOGIC
+            // ==========================================
+            function processResult(domain, url) {
+                isProcessing = false;
+                bypassBtn.disabled = false;
+                bypassBtn.classList.remove('pulse-red');
+
+                // Extract the short code from URL
+                let shortCode = '';
+                try {
+                    const urlObj = new URL(url);
+                    // Get the last path segment
+                    const pathParts = urlObj.pathname.split('/').filter(p => p.length > 0);
+                    shortCode = pathParts[pathParts.length - 1] || '';
+                } catch (e) {
+                    shortCode = '';
+                }
+
+                // === CASE 1: layma.net ===
+                if (domain === 'layma.net') {
+                    // Check if URL matches specific pattern: https://layma.net/5ABkvpfQu
+                    if (url.includes('layma.net/5ABkvpfQu') || shortCode === '5ABkvpfQu') {
+                        showResult('success',
+                            '> VƯỢT LINK THÀNH CÔNG!<br>' +
+                            '> MÃ RÚT GỌN: <strong>' + shortCode + '</strong><br>' +
+                            '> LINK TẢI VỀ:<br>' +
+                            '<a href="https://www.mediafire.com/file/msusgfxw3xosdpl/AimLock+Bro+👹.zip/file" target="_blank" rel="noopener">https://www.mediafire.com/file/msusgfxw3xosdpl/AimLock+Bro+👹.zip/file</a>'
+                        );
+                        return;
+                    }
+                    // Other layma.net links -> error
+                    showResult('error',
+                        '> ERROR 404: DO NOT ACCEPT THIS ACTION<br>' +
+                        '> Link rút gọn không hợp lệ hoặc đã hết hạn.<br>' +
+                        '> Vui lòng kiểm tra lại URL.'
+                    );
+                    return;
+                }
+
+                // === CASE 2: link4m.net ===
+                if (domain === 'link4m.net') {
+                    // Check if URL matches specific pattern: https://link4m.net/eYerc
+                    if (url.includes('link4m.net/eYerc') || shortCode === 'eYerc') {
+                        showResult('success',
+                            '> VƯỢT LINK THÀNH CÔNG!<br>' +
+                            '> MÃ RÚT GỌN: <strong>' + shortCode + '</strong><br>' +
+                            '> LINK TẢI VỀ:<br>' +
+                            '<a href="https://www.mediafire.com/file/yqefvmq4mefu7h5/Minecraft_PE_26.30_BANDISHARE.apk/file" target="_blank" rel="noopener">https://www.mediafire.com/file/yqefvmq4mefu7h5/Minecraft_PE_26.30_BANDISHARE.apk/file</a>'
+                        );
+                        return;
+                    }
+                    // Other link4m.net links -> error
+                    showResult('error',
+                        '> ERROR 404: DO NOT ACCEPT THIS ACTION<br>' +
+                        '> Link rút gọn không hợp lệ hoặc đã hết hạn.<br>' +
+                        '> Vui lòng kiểm tra lại URL.'
+                    );
+                    return;
+                }
+
+                // === CASE 3: Other domains (traffic4k, site2s, bbmkt, etc.) ===
+                // Simulate "limit reached" error
+                const errorMessages = [
+                    '> ĐÃ ĐẠT ĐẾN GIỚI HẠN RÚT GỌN HÔM NAY<br>> Vui lòng quay lại vào ngày mai để tiếp tục.',
+                    '> ERROR 404: DO NOT ACCEPT THIS ACTION<br>> Yêu cầu của bạn đã bị từ chối bởi hệ thống.',
+                    '> ĐÃ ĐẠT ĐẾN GIỚI HẠN RÚT GỌN HÔM NAY<br>> Tài khoản của bạn đã vượt quá số lần cho phép.'
+                ];
+                const randomError = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+
+                // Randomly choose between limit message and 404
+                if (Math.random() > 0.5) {
+                    showResult('limit', randomError);
+                } else {
+                    showResult('error',
+                        '> ERROR 404: DO NOT ACCEPT THIS ACTION<br>' +
+                        '> Link rút gọn không hợp lệ hoặc đã hết hạn.<br>' +
+                        '> Vui lòng kiểm tra lại URL.'
+                    );
+                }
+            }
+
+            // ==========================================
+            // RESULT DISPLAY
+            // ==========================================
+            function showResult(type, message) {
+                resultArea.className = 'result-area ' + type;
+                resultArea.innerHTML = message;
+                resultArea.style.display = 'block';
+            }
+
+            function clearResult() {
+                resultArea.className = 'result-area';
+                resultArea.innerHTML = '';
+                resultArea.style.display = 'none';
+            }
+
+            // ==========================================
+            // INPUT VALIDATION ON BLUR
+            // ==========================================
+            urlInput.addEventListener('blur', function() {
+                const val = urlInput.value.trim();
+                if (val && !val.startsWith('https://')) {
+                    // Don't show error immediately, just visual hint
+                    urlInput.style.borderColor = '#ff0000';
+                } else {
+                    urlInput.style.borderColor = '#1a3a1a';
+                }
+            });
+
+            urlInput.addEventListener('input', function() {
+                urlInput.style.borderColor = '#1a3a1a';
+                if (resultArea.style.display === 'block') {
+                    clearResult();
+                }
+            });
+
+            // ==========================================
+            // ENTER KEY SUPPORT
+            // ==========================================
+            urlInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (!bypassBtn.disabled) {
+                        bypassBtn.click();
+                    } else if (selectedShortener) {
+                        confirmBtn.click();
+                    } else {
+                        showResult('error', '> LỖI: Vui lòng chọn link rút gọn trước!');
+                    }
+                }
+            });
+
+            // ==========================================
+            // INIT
+            // ==========================================
+            console.log('%c[SYSTEM BYPASS v2.0] Initialized', 'color: #00ff41; font-size: 14px; font-weight: bold;');
+            console.log('%c[WARNING] This is a simulation for educational purposes only.', 'color: #ff0000; font-size: 12px;');
+
+        })();
+    </script>
+</body>
+                  </html>
